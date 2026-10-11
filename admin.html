@@ -1,0 +1,134 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background: #1d3557;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 30px auto;
+            padding: 20px;
+        }
+
+        .menu {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 3px 10px #00000015;
+        }
+
+        .card h2 {
+            color: #1d3557;
+        }
+
+        .card a {
+            display: inline-block;
+            background: #1d3557;
+            color: white;
+            padding: 10px 18px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        .card a:hover {
+            background: #457b9d;
+        }
+
+        .logout {
+            display: inline-block;
+            margin-top: 25px;
+            background: #c1121f;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+        }
+
+        footer {
+            text-align: center;
+            color: #666;
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>Student QR Attendance System</h1>
+        <p>Admin Dashboard</p>
+        <p>Welcome, {{ name }}!</p>
+    </header>
+
+    <div class="container">
+
+        <div class="menu">
+
+            <div class="card">
+                <h2>Students</h2>
+                <p>Add and manage student accounts.</p>
+                <a href="/students">Manage Students</a>
+            </div>
+
+            <div class="card">
+                <h2>Teachers</h2>
+                <p>Add and manage teacher accounts.</p>
+                <a href="/teachers">Manage Teachers</a>
+            </div>
+
+            <div class="card">
+                <h2>Subjects</h2>
+                <p>Add and view subject information.</p>
+                <a href="/subjects">Manage Subjects</a>
+            </div>
+
+            <div class="card">
+                <h2>Schedules</h2>
+                <p>Set subject days and class times.</p>
+                <a href="/schedules">Manage Schedules</a>
+            </div>
+
+            <div class="card">
+                <h2>Attendance</h2>
+                <p>View student attendance records.</p>
+                <a href="/attendance">View Attendance</a>
+            </div>
+
+        </div>
+
+        <div style="text-align: center;">
+            <a class="logout" href="/logout">Log Out</a>
+        </div>
+
+    </div>
+
+    <footer>
+        Student QR Attendance System
+    </footer>
+
+</body>
+</html>

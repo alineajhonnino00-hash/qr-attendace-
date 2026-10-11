@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Reports</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f8;
+            margin: 0;
+            padding: 20px;
+            color: #243247;
+        }
+        .container {
+            max-width: 1250px;
+            margin: 20px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 12px #00000010;
+        }
+        h1 { color: #1d3557; }
+        .top-links { margin-bottom: 22px; }
+        .top-links a { color: #1d3557; margin-right: 15px; }
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin: 20px 0;
+            padding: 16px;
+            background: #f7f8fa;
+            border-radius: 8px;
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 6px;
+        }
+        input, select {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px;
+            border: 1px solid #ccd2dc;
+            border-radius: 5px;
+            background: white;
+        }
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        button, .button-link {
+            display: inline-block;
+            border: 0;
+            border-radius: 5px;
+            padding: 10px 15px;
+            cursor: pointer;
+            text-decoration: none;
+            font-size: 14px;
+        }
+        .primary { background: #1d3557; color: white; }
+        .secondary { background: #e5eaf1; color: #243247; }
+        .success { background: #287d4b; color: white; }
+        .summary {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin: 18px 0;
+        }
+        .summary-card {
+            flex: 1;
+            min-width: 130px;
+            padding: 15px;
+            background: #f2f4f8;
+            border-radius: 8px;
+        }
+        .summary-card strong {
+            display: block;
+            font-size: 24px;
+            margin-top: 6px;
+            color: #1d3557;
+        }
+        .table-wrapper { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            white-space: nowrap;
+        }
+        th { background: #1d3557; color: white; }
+        tbody tr:nth-child(even) { background: #f7f8fa; }
+        .status-present { color: #287d4b; font-weight: bold; }
+        .status-late { color: #b45309; font-weight: bold; }
+        .empty { text-align: center; padding: 25px; }
+        .report-count { margin-top: 12px; color: #526174; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .container { max-width: none; margin: 0; padding: 0; box-shadow: none; }
+            .no-print, .top-links, .filters, .actions { display: none !important; }
+            table { font-size: 10px; }
+            th, td { padding: 6px; white-space: normal; }
+            th { background: #ddd !important; color: black !important; }
+            h1 { font-size: 20px; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Attendance Reports</h1>
+
+    <div class="top-links no-print">
+        <a href="/admin">Back to Dashboard</a>
+    </div>
+
+    <div class="summary">
+        <div class="summary-card">
+            Total Records
+            <strong id="totalCount">0</strong>
+        </div>
+        <div class="summary-card">
+            Present
+            <strong id="presentCount">0</strong>
+        </div>
+        <div class="summary-card">
+            Late
+            <strong id="lateCount">0</strong>
+        </div>
+    </div>
+
+    <div class="filters no-print">
+        <div>
+            <label for="searchInput">Search Student</label>
+            <input id="searchInput" type="search"
+                   placeholder="Student ID or name">
+        </div>
+        <div>
+            <label for="subjectFilter">Subject</label>
+            <select id="subjectFilter">
+                <option value="">All subjects</option>
+                {% for subject in subjects %}
+                <option value="{{ subject['subject_code'] }}">
+                    {{ subject['subject_code'] }} - {{ subject['subject_name'] }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div>
+            <label for="dateFrom">Date From</label>
+            <input id="dateFrom" type="date">
+        </div>
+        <div>
+            <label for="dateTo">Date To</label>
+            <input id="dateTo" type="date">
+        </div>
+        <div>
+            <label for="statusFilter">Status</label>
+            <select id="statusFilter">
+                <option value="">All statuses</option>
+                <option value="Present">Present</option>
+                <option value="Late">Late</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="actions no-print">
+        <button class="primary" type="button" onclick="applyFilters()">
+            Apply Filters
+        </button>
+        <button class="secondary" type="button" onclick="resetFilters()">
+            Reset
+        </button>
+        <button class="success" type="button" onclick="downloadCSV()">
+            Download CSV
+        </button>
+        <button class="secondary" type="button" onclick="window.print()">
+            Print Report
+        </button>
+    </div>
+
+    <p class="report-count" id="reportCount" aria-live="polite"></p>
+
+    <div class="table-wrapper">
+        <table id="attendanceTable">
+            <thead>
+                <tr>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Subject Code</th>
+                    <th>Subject Name</th>
+                    <th>Class Day</th>
+                    <th>Date</th>
+                    <th>Time In</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr data-student-id="{{ record['student_id'] }}"
+                    data-student-name="{{ record['full_name'] }}"
+                    data-subject-code="{{ record['subject_code'] }}"
+                    data-date="{{ record['attendance_date'] }}"
+                    data-status="{{ record['status'] }}">
+                    <td>{{ record["student_id"] }}</td>
+                    <td>{{ record["full_name"] }}</td>
+                    <td>{{ record["subject_code"] }}</td>
+                    <td>{{ record["subject_name"] }}</td>
+                    <td>{{ record["day"] }}</td>
+                    <td>{{ record["attendance_date"] }}</td>
+                    <td>{{ record["time_in"] }}</td>
+                    <td>{{ record["status"] }}</td>
+                </tr>
+                {% else %}
+                <tr class="empty-row">
+                    <td colspan="8" class="empty">No attendance records yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    const table = document.getElementById("attendanceTable");
+    const rows = Array.from(table.querySelectorAll("tbody tr:not(.empty-row)"));
+    const emptyRow = table.querySelector(".empty-row");
+
+    function applyFilters() {
+        const search = document.getElementById("searchInput").value
+            .trim().toLowerCase();
+        const subject = document.getElementById("subjectFilter").value;
+        const from = document.getElementById("dateFrom").value;
+        const to = document.getElementById("dateTo").value;
+        const status = document.getElementById("statusFilter").value;
+
+        let total = 0, present = 0, late = 0;
+
+        rows.forEach(row => {
+            const studentId = (row.dataset.studentId || "").toLowerCase();
+            const studentName = (row.dataset.studentName || "").toLowerCase();
+            const rowDate = row.dataset.date || "";
+            const rowStatus = (row.dataset.status || "").trim().toLowerCase();
+
+            const matches =
+                (!search || studentId.includes(search) || studentName.includes(search)) &&
+                (!subject || row.dataset.subjectCode === subject) &&
+                (!from || rowDate >= from) &&
+                (!to || rowDate <= to) &&
+                (!status || rowStatus === status.toLowerCase());
+
+            row.hidden = !matches;
+
+            if (matches) {
+                total++;
+                if (rowStatus === "present") present++;
+                if (rowStatus === "late") late++;
+            }
+        });
+
+        if (emptyRow) emptyRow.hidden = total !== 0;
+
+        document.getElementById("totalCount").textContent = total;
+        document.getElementById("presentCount").textContent = present;
+        document.getElementById("lateCount").textContent = late;
+        document.getElementById("reportCount").textContent =
+            "Showing " + total + " matching attendance record(s).";
+    }
+
+    function resetFilters() {
+        document.getElementById("searchInput").value = "";
+        document.getElementById("subjectFilter").value = "";
+        document.getElementById("dateFrom").value = "";
+        document.getElementById("dateTo").value = "";
+        document.getElementById("statusFilter").value = "";
+        applyFilters();
+    }
+
+    function downloadCSV() {
+        const visibleRows = rows.filter(row => !row.hidden);
+        if (visibleRows.length === 0) {
+            alert("No attendance records to download.");
+            return;
+        }
+
+        const headers = [
+            "Student ID", "Student Name", "Subject Code", "Subject Name",
+            "Class Day", "Date", "Time In", "Status"
+        ];
+
+        function csvCell(value) {
+            let text = String(value ?? "");
+            // Prevent spreadsheet formula execution in exported cells.
+            if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
+            return '"' + text.replace(/"/g, '""') + '"';
+        }
+
+        const lines = [headers.map(csvCell).join(",")];
+
+        visibleRows.forEach(row => {
+            const cells = Array.from(row.querySelectorAll("td"))
+                .map(cell => cell.textContent.trim());
+            lines.push(cells.map(csvCell).join(","));
+        });
+
+        const blob = new Blob(
+            ["\uFEFF" + lines.join("\r\n")],
+            {type: "text/csv;charset=utf-8;"}
+        );
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "attendance_report.csv";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        URL.revokeObjectURL(url);
+    }
+
+    document.getElementById("searchInput").addEventListener("input", applyFilters);
+    document.getElementById("subjectFilter").addEventListener("change", applyFilters);
+    document.getElementById("dateFrom").addEventListener("change", applyFilters);
+    document.getElementById("dateTo").addEventListener("change", applyFilters);
+    document.getElementById("statusFilter").addEventListener("change", applyFilters);
+
+    applyFilters();
+</script>
+</body>
+</html>

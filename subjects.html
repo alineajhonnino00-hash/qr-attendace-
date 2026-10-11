@@ -1,0 +1,253 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Subjects</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            padding: 30px;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1, h2 {
+            color: #243b55;
+        }
+
+        h1 {
+            margin-top: 20px;
+            margin-bottom: 8px;
+        }
+
+        h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .subtitle {
+            color: #777;
+            margin-bottom: 25px;
+        }
+
+        .back-button {
+            display: inline-block;
+            padding: 11px 18px;
+            background: #e9ecef;
+            color: #333;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .back-button:hover {
+            background: #d9dee3;
+        }
+
+        .section {
+            margin-top: 25px;
+            padding: 25px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            background: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccd2d9;
+            border-radius: 6px;
+            font-size: 15px;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #2878d0;
+        }
+
+        .add-button {
+            padding: 12px 20px;
+            background: #2878d0;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .add-button:hover {
+            background: #1c5fa8;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        thead {
+            background: #243b55;
+            color: white;
+        }
+
+        th, td {
+            padding: 14px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        tbody tr:hover {
+            background: #f7f9fc;
+        }
+
+        .empty-message {
+            padding: 25px;
+            text-align: center;
+            color: #777;
+        }
+
+        .message {
+            margin-top: 18px;
+            padding: 12px 15px;
+            border-radius: 6px;
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 18px;
+            }
+
+            .section {
+                padding: 16px;
+            }
+
+            th, td {
+                padding: 10px 8px;
+                font-size: 13px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <a href="{{ url_for('admin') }}" class="back-button">
+        ← Back to Dashboard
+    </a>
+
+    <h1>Manage Subjects</h1>
+    <p class="subtitle">Add and manage your class subjects.</p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="message">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="section">
+        <h2>Add Subject</h2>
+
+        <form method="POST" action="{{ url_for('subjects') }}">
+            <div class="form-group">
+                <label for="subject_code">Subject Code</label>
+                <input
+                    type="text"
+                    id="subject_code"
+                    name="subject_code"
+                    placeholder="e.g. CC 103"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label for="subject_name">Subject Name</label>
+                <input
+                    type="text"
+                    id="subject_name"
+                    name="subject_name"
+                    placeholder="Enter subject name"
+                    required
+                >
+            </div>
+
+            <button type="submit" class="add-button">
+                + Add Subject
+            </button>
+        </form>
+    </div>
+
+    <div class="section">
+        <h2>Subject List</h2>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for subject in subjects %}
+                    <tr>
+                        <td>{{ subject.subject_code }}</td>
+                        <td>{{ subject.subject_name }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="2" class="empty-message">
+                            No subjects found.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

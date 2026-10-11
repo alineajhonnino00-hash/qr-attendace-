@@ -1,0 +1,99 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Records</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        h1 {
+            color: #1d3557;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background: #1d3557;
+            color: white;
+        }
+
+        tr:nth-child(even) {
+            background: #f7f8fa;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Attendance Records</h1>
+
+        <p><a href="/admin">Back to Dashboard</a></p>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Student ID</th>
+                        <th>Student Name</th>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Class Day</th>
+                        <th>Date</th>
+                        <th>Time In</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record["student_id"] }}</td>
+                        <td>{{ record["full_name"] }}</td>
+                        <td>{{ record["subject_code"] }}</td>
+                        <td>{{ record["subject_name"] }}</td>
+                        <td>{{ record["day"] }}</td>
+                        <td>{{ record["attendance_date"] }}</td>
+                        <td>{{ record["time_in"] }}</td>
+                        <td>{{ record["status"] }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="8">No attendance records yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</body>
+</html>

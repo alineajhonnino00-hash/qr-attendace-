@@ -1,0 +1,150 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Teachers</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 30px auto;
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px #00000015;
+        }
+
+        h1, h2 {
+            color: #1d3557;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px;
+            box-sizing: border-box;
+        }
+
+        button {
+            background: #1d3557;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #457b9d;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        th {
+            background: #1d3557;
+            color: white;
+        }
+
+        .success {
+            color: green;
+        }
+
+        .error {
+            color: red;
+        }
+
+        a {
+            color: #1d3557;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Manage Teachers</h1>
+
+        <p><a href="/admin">Back to Dashboard</a></p>
+
+        {% if message %}
+            <p class="success">{{ message }}</p>
+        {% endif %}
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        <h2>Add Teacher</h2>
+
+        <form method="POST" action="/teachers">
+            <label for="full_name">Full Name</label>
+            <input
+                type="text"
+                id="full_name"
+                name="full_name"
+                required
+            >
+
+            <label for="username">Username</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                required
+            >
+
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                required
+            >
+
+            <button type="submit">Add Teacher</button>
+        </form>
+
+        <h2>Teacher List</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Full Name</th>
+                    <th>Username</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for teacher in teachers %}
+                <tr>
+                    <td>{{ teacher["full_name"] }}</td>
+                    <td>{{ teacher["username"] }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="2">No teachers added yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

@@ -1,0 +1,288 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage Schedules</title>
+
+    <style>
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            padding: 30px;
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 3px 12px rgba(0,0,0,.08);
+        }
+
+        h1, h2 { color: #243b55; }
+        h1 { margin-top: 15px; }
+        h2 { margin-top: 0; }
+
+        .subtitle { color: #777; margin-bottom: 25px; }
+
+        .section {
+            margin-top: 25px;
+            padding: 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+        }
+
+        .form-group { margin-bottom: 18px; }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+
+        select, input[type="time"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ccd2d9;
+            border-radius: 6px;
+            font-size: 15px;
+            background: white;
+        }
+
+        select:focus, input:focus {
+            outline: none;
+            border-color: #2878d0;
+        }
+
+        .time-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        button, .back-button, .qr-button {
+            display: inline-block;
+            padding: 11px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .add-button, .qr-button {
+            background: #2878d0;
+            color: white;
+        }
+
+        .add-button:hover, .qr-button:hover { background: #1c5fa8; }
+
+        .delete-button {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-button:hover { background: #b52a37; }
+
+        .back-button {
+            background: #e9ecef;
+            color: #333;
+        }
+
+        .table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+        }
+
+        thead { background: #243b55; color: white; }
+
+        th, td {
+            padding: 13px 12px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        tbody tr:hover { background: #f7f9fc; }
+        td form { margin: 0; }
+
+        .message {
+            padding: 12px 15px;
+            margin: 15px 0;
+            border-radius: 6px;
+            overflow-wrap: anywhere;
+        }
+
+        .success { background: #d1e7dd; color: #0f5132; }
+        .error { background: #f8d7da; color: #842029; }
+        .empty-message { text-align: center; color: #777; padding: 25px; }
+        .actions { display: flex; gap: 8px; align-items: center; }
+
+        .qr-note {
+            color: #666;
+            font-size: 13px;
+            margin-top: 12px;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 12px; }
+            .container { padding: 18px; }
+            .section { padding: 15px; }
+            .time-row { grid-template-columns: 1fr; gap: 0; }
+            th, td { padding: 10px 8px; font-size: 13px; }
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <a href="{{ url_for('admin') }}" class="back-button">
+        &#8592; Back to Dashboard
+    </a>
+
+    <h1>Manage Schedules</h1>
+    <p class="subtitle">Set subject days and class times.</p>
+
+    {% if message %}
+        <div class="message success">{{ message }}</div>
+    {% endif %}
+
+    {% if error %}
+        <div class="message error">{{ error }}</div>
+    {% endif %}
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, text in messages %}
+                <div class="message {{ 'error' if category == 'error' else 'success' }}">
+                    {{ text }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <div class="section">
+        <h2>Add Schedule</h2>
+
+        <form method="POST" action="{{ url_for('schedules') }}">
+            <div class="form-group">
+                <label for="subject_id">Subject</label>
+                <select name="subject_id" id="subject_id" required>
+                    <option value="">Select subject</option>
+                    {% for subject in subjects %}
+                        <option value="{{ subject.id }}">
+                            {{ subject.subject_code }} - {{ subject.subject_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="day">Class Day</label>
+                <select name="day" id="day" required>
+                    <option value="">Select day</option>
+                    <option value="MW">MW (Monday and Wednesday)</option>
+                    <option value="TTH">TTH (Tuesday and Thursday)</option>
+                    <option value="Monday">Monday only</option>
+                    <option value="Tuesday">Tuesday only</option>
+                    <option value="Wednesday">Wednesday only</option>
+                    <option value="Thursday">Thursday only</option>
+                    <option value="Friday">Friday only</option>
+                    <option value="Saturday">Saturday only</option>
+                    <option value="Sunday">Sunday only</option>
+                </select>
+            </div>
+
+            <div class="time-row">
+                <div class="form-group">
+                    <label for="start_time">Start Time</label>
+                    <input type="time" name="start_time" id="start_time" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="end_time">End Time</label>
+                    <input type="time" name="end_time" id="end_time" required>
+                </div>
+            </div>
+
+            <button type="submit" class="add-button">+ Add Schedule</button>
+        </form>
+
+        <p class="qr-note">
+            Each subject uses one permanent subject QR code for its scheduled classes.
+        </p>
+    </div>
+
+    <div class="section">
+        <h2>Schedule List</h2>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Subject Code</th>
+                        <th>Subject Name</th>
+                        <th>Day</th>
+                        <th>Start Time</th>
+                        <th>End Time</th>
+                        <th>Subject QR</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                {% for schedule in schedules %}
+                    <tr>
+                        <td>{{ schedule.subject_code }}</td>
+                        <td>{{ schedule.subject_name }}</td>
+                        <td>{{ schedule.day }}</td>
+                        <td>{{ schedule.start_time }}</td>
+                        <td>{{ schedule.end_time }}</td>
+                        <td>
+                            <a class="qr-button"
+                               href="{{ url_for('subject_qr', subject_id=schedule.subject_id) }}"
+                               target="_blank">
+                                View QR
+                            </a>
+                        </td>
+                        <td>
+                            <form method="POST"
+                                  action="{{ url_for('delete_schedule', schedule_id=schedule.id) }}"
+                                  onsubmit="return confirm('Delete this schedule?');">
+                                <button type="submit" class="delete-button">
+                                    Delete
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="empty-message">
+                            No schedules have been added yet.
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
